@@ -37,11 +37,11 @@ Subnet::Subnet ( const std::string & subnet ) {
             //Add ommited zeroes for more unified representation
             if ( chunk . size ( ) < CHUNK_SIZE )
                 chunk = StringRepeat ( "0", CHUNK_SIZE - chunk . size ( ) ) + chunk;
-            
             m_Chunks . push_back ( chunk );
             start = pos + 1;
         }
     }
+    //Get mask from the remaining string
     m_Mask = std::stoi ( subnet . substr ( start + 1, subnet . size ( ) - start ) );
 }
 
@@ -64,11 +64,15 @@ struct Data {
 };
 
 bool Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
+    return false;
+}
 
+bool Data::Find ( const ECS & ecs, Result & r ) {
+    return false;
 }
 
 Result Route ( Data & d, const ECS & ecs ) {
-
+    return { 0, 0 };
 }
 
 int main ( void ) {
