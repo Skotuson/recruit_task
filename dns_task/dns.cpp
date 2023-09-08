@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <cassert>
 #include <vector>
+#include <memory>
 #include <string>
 #include <tuple>
 
@@ -50,18 +51,31 @@ struct ECS {
 };
 
 struct TrieNode {
+     TrieNode ( const std::string & val );
     std::string             m_Val;
     std::vector<TrieNode *> m_Children;
 };
 
+TrieNode::TrieNode ( const std::string & val )
+: m_Val ( val )
+{
+}
+
 struct Data {
+     Data ( void );
+    ~Data ( void );
+
     bool       Find   ( const ECS    & ecs, 
                         Result       & r );
     bool       Insert ( const Subnet & subnet, 
                         uint16_t       pop_id );
 
-    TrieNode * m_TrieRoot = nullptr;
+    std::shared_ptr<TrieNode> m_TrieRoot;
 };
+
+Data::Data ( void ) 
+: m_TrieRoot ( std::make_shared<TrieNode> ( "" ) )
+{}
 
 bool Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
     return false;
