@@ -25,7 +25,8 @@ std::string StringRepeat ( const std::string & str, size_t nrepeats ) {
 }
 
 struct Subnet {
-    Subnet ( const std::string & subnet );
+                Subnet      ( const  std::string & subnet );
+    std::string operator [] ( size_t idx ) const;
     std::vector<std::string> m_Chunks;
     size_t                   m_Mask;
 };
@@ -48,35 +49,34 @@ Subnet::Subnet ( const std::string & subnet ) {
     m_Mask = std::stoi ( subnet . substr ( start + 1, subnet . size ( ) - start ) );
 }
 
+std::string Subnet::operator [] ( size_t idx ) const {
+    return m_Chunks[idx];
+}
+
 struct ECS {
 
 };
 
 struct TrieNode {
-     TrieNode ( const std::string & val );
+     TrieNode ( void );
      //Overloaded ctor to store the pop value into optional
-     TrieNode ( const std::string & val,
-                uint16_t            pop );
-    std::string             m_Val;
-    std::optional<uint16_t> m_PoP;
-    std::unordered_map<std::string, TrieNode *> m_Children;
+     TrieNode ( uint16_t pop );
+    std::optional<uint16_t>                                    m_PoP;
+    std::unordered_map<std::string, std::shared_ptr<TrieNode>> m_Children;
 };
 
-TrieNode::TrieNode ( const std::string & val )
-: m_Val ( val )
+TrieNode::TrieNode ( void )
 {
 }
 
-TrieNode::TrieNode ( const std::string & val, uint16_t pop )
-: m_Val ( val ),
-  m_PoP ( pop )
+TrieNode::TrieNode ( uint16_t pop )
+: m_PoP ( pop )
 {
 }
 
 struct Data {
      Data ( void );
-    ~Data ( void );
-
+    
     bool       Find   ( const ECS    & ecs, 
                         Result       & r );
     bool       Insert ( const Subnet & subnet, 
@@ -86,12 +86,16 @@ struct Data {
 };
 
 Data::Data ( void ) 
-: m_TrieRoot ( std::make_shared<TrieNode> ( "" ) )
+: m_TrieRoot ( std::make_shared<TrieNode> ( ) )
 {}
 
 bool Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
     std::shared_ptr<TrieNode> curr = m_TrieRoot;
-    
+    size_t chunk_idx = 0;
+
+    while ( chunk_idx != subnet . m_Chunks . size ( ) )
+        curr = curr -> m_Children[subnet[chunk_idx++]] = std::make_shared<TrieNode> (  );
+
     return true;
 }
 
@@ -104,18 +108,27 @@ Result Route ( Data & d, const ECS & ecs ) {
 }
 
 int main ( void ) {
+    Data d;
+    
     //Subnet a ( "2001:49f0:d0b8::/48" );
+    //d . Insert ( a, 0 );
     //for ( const auto & x : a . m_Chunks )
     //    std::cout << x << std::endl;
     
+
     //Parse all routing data
     std::string subnet;
     uint16_t    pop;
     while ( std::cin >> std::ws >> subnet >> pop ) {
         Subnet a ( subnet );
+        d . Insert ( a, pop );
         //std::cout << "Mask: " << a . m_Mask << std::endl;
         //for ( const auto & x : a . m_Chunks )
         //  std::cout << x << std::endl;
     }
+
+    //for ( const auto & el : d . m_TrieRoot -> m_Children )
+    //    std::cout << el . first << " -> " << el . second -> m_Children . size ( ) << std::endl;
+
     return 0;
 }
