@@ -1,3 +1,4 @@
+#include <unordered_map>
 #include <iostream>
 #include <optional>
 #include <cstdint>
@@ -58,7 +59,7 @@ struct TrieNode {
                 uint16_t            pop );
     std::string             m_Val;
     std::optional<uint16_t> m_PoP;
-    std::vector<TrieNode *> m_Children;
+    std::unordered_map<std::string, TrieNode *> m_Children;
 };
 
 TrieNode::TrieNode ( const std::string & val )
@@ -89,6 +90,7 @@ Data::Data ( void )
 {}
 
 bool Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
+    TrieNode * curr = m_TrieRoot;
     return false;
 }
 
