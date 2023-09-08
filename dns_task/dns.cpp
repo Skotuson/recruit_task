@@ -77,7 +77,7 @@ TrieNode::TrieNode ( uint16_t pop )
 struct Data {
      Data ( void );
     
-    bool       Find   ( const ECS    & ecs, 
+    bool       Find   ( const Subnet & subnet, 
                         Result       & r );
     bool       Insert ( const Subnet & subnet, 
                         uint16_t       pop_id );
@@ -103,11 +103,20 @@ bool Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
     return true;
 }
 
-bool Data::Find ( const ECS & ecs, Result & r ) {
-    return false;
+bool Data::Find ( const Subnet & subnet, Result & r ) {
+    std::shared_ptr<TrieNode> curr = m_TrieRoot;
+    size_t chunk_idx = 0;
+
+    while ( chunk_idx != subnet . m_Chunks . size ( ) ) {
+        if ( ! curr -> m_Children . count ( subnet[chunk_idx] ) )
+            return false;
+        else curr = curr -> m_Children[subnet[chunk_idx]];
+    }
+
+    return true;
 }
 
-Result Route ( Data & d, const ECS & ecs ) {
+Result Route ( Data & d, const Subnet & ecs ) {
     return { 0, 0 };
 }
 
