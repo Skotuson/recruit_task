@@ -1,4 +1,5 @@
 #include <iostream>
+#include <optional>
 #include <cstdint>
 #include <cassert>
 #include <vector>
@@ -52,12 +53,22 @@ struct ECS {
 
 struct TrieNode {
      TrieNode ( const std::string & val );
+     //Overloaded ctor to store the pop value into optional
+     TrieNode ( const std::string & val,
+                uint16_t            pop );
     std::string             m_Val;
+    std::optional<uint16_t> m_PoP;
     std::vector<TrieNode *> m_Children;
 };
 
 TrieNode::TrieNode ( const std::string & val )
 : m_Val ( val )
+{
+}
+
+TrieNode::TrieNode ( const std::string & val, uint16_t pop )
+: m_Val ( val ),
+  m_PoP ( pop )
 {
 }
 
