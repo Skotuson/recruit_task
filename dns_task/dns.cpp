@@ -93,8 +93,12 @@ bool Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
     std::shared_ptr<TrieNode> curr = m_TrieRoot;
     size_t chunk_idx = 0;
 
-    while ( chunk_idx != subnet . m_Chunks . size ( ) )
-        curr = curr -> m_Children[subnet[chunk_idx++]] = std::make_shared<TrieNode> (  );
+    while ( chunk_idx != subnet . m_Chunks . size ( ) ) {
+        if ( ! curr -> m_Children . count ( subnet[chunk_idx] ) )
+            curr = curr -> m_Children[subnet[chunk_idx]] = std::make_shared<TrieNode> ( );
+        else curr = curr -> m_Children[subnet[chunk_idx]];
+        chunk_idx++;
+    }
 
     return true;
 }
@@ -111,11 +115,13 @@ int main ( void ) {
     Data d;
     
     //Subnet a ( "2001:49f0:d0b8::/48" );
-    //d . Insert ( a, 0 );
+    //Subnet b ( "2409:8904:3490::/44" );
+    //Subnet c ( "2409:8915:2480::/44" );
+    //d . Insert ( b, 0 );
+    //d . Insert ( c, 0 );
     //for ( const auto & x : a . m_Chunks )
     //    std::cout << x << std::endl;
     
-
     //Parse all routing data
     std::string subnet;
     uint16_t    pop;
@@ -127,8 +133,8 @@ int main ( void ) {
         //  std::cout << x << std::endl;
     }
 
-    //for ( const auto & el : d . m_TrieRoot -> m_Children )
-    //    std::cout << el . first << " -> " << el . second -> m_Children . size ( ) << std::endl;
+    for ( const auto & el : d . m_TrieRoot -> m_Children )
+        std::cout << el . first << " -> " << el . second -> m_Children . size ( ) << std::endl;
 
     return 0;
 }
