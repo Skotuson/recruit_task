@@ -1,3 +1,4 @@
+#include <iostream>
 #include <cstdint>
 #include <cassert>
 #include <vector>
@@ -13,7 +14,15 @@ struct Subnet {
 };
 
 Subnet::Subnet ( const std::string & subnet ) {
-
+    size_t start = 0, 
+           pos = 0; 
+    while ( pos != std::string::npos ) {
+        pos = subnet . find ( ":", start );
+        if ( pos != std::string::npos ) {
+            m_Chunks . push_back ( subnet . substr ( start, pos - start ) );
+            start = pos + 1;
+        }
+    }
 }
 
 struct ECS {
@@ -43,6 +52,8 @@ Result Route ( Data & d, const ECS & ecs ) {
 }
 
 int main ( void ) {
-
+    Subnet a ( "2001:49f0:d0b8::/48" );
+    for ( const auto & x : a . m_Chunks )
+        std::cout << x << std::endl;
     return 0;
 }
