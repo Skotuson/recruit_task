@@ -7,6 +7,15 @@
 
 using Result = std::pair<uint16_t, int>;
 
+const size_t CHUNK_SIZE = 4;
+
+std::string StringRepeat ( char c, size_t nrepeats ) {
+    std::string r = "";
+    while ( nrepeats-- )
+        r += c;
+    return r;
+}
+
 struct Subnet {
     Subnet ( const std::string & subnet );
     std::vector<std::string> m_Chunks;
@@ -19,10 +28,16 @@ Subnet::Subnet ( const std::string & subnet ) {
     while ( pos != std::string::npos ) {
         pos = subnet . find ( ":", start );
         if ( pos != std::string::npos ) {
-            m_Chunks . push_back ( subnet . substr ( start, pos - start ) );
+            std::string chunk = subnet . substr ( start, pos - start );
+            //Add ommited zeroes for more unified representation
+            if ( chunk . size ( ) < CHUNK_SIZE )
+                chunk = StringRepeat ( '0', CHUNK_SIZE - chunk . size ( ) ) + chunk;
+            
+            m_Chunks . push_back ( chunk );
             start = pos + 1;
         }
     }
+    m_Mask = std::stoi ( subnet . substr ( start + 1, subnet . size ( ) - start ) );
 }
 
 struct ECS {
@@ -52,8 +67,18 @@ Result Route ( Data & d, const ECS & ecs ) {
 }
 
 int main ( void ) {
-    Subnet a ( "2001:49f0:d0b8::/48" );
-    for ( const auto & x : a . m_Chunks )
-        std::cout << x << std::endl;
+    //Subnet a ( "2001:49f0:d0b8::/48" );
+    //for ( const auto & x : a . m_Chunks )
+    //    std::cout << x << std::endl;
+    
+    //Parse all routing data
+    std::string subnet;
+    uint16_t    pop;
+    while ( std::cin >> std::ws >> subnet >> pop ) {
+        Subnet a ( subnet );
+        std::cout << "Mask: " << a . m_Mask << std::endl;
+        for ( const auto & x : a . m_Chunks )
+          std::cout << x << std::endl;
+    }
     return 0;
 }
