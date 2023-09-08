@@ -90,7 +90,7 @@ Data::Data ( void )
 {}
 
 bool Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
-    TrieNode * curr = m_TrieRoot;
+    std::shared_ptr<TrieNode> curr = m_TrieRoot;
     return false;
 }
 
