@@ -9,10 +9,15 @@ using Result = std::pair<uint16_t, int>;
 
 const size_t CHUNK_SIZE = 4;
 
-std::string StringRepeat ( char c, size_t nrepeats ) {
+/**
+ @brief Returns repeated string
+ @param str String to repeat
+ @param nrepeats Number of repetitions of given string
+ */
+std::string StringRepeat ( const std::string & str, size_t nrepeats ) {
     std::string r = "";
     while ( nrepeats-- )
-        r += c;
+        r += str;
     return r;
 }
 
@@ -31,7 +36,7 @@ Subnet::Subnet ( const std::string & subnet ) {
             std::string chunk = subnet . substr ( start, pos - start );
             //Add ommited zeroes for more unified representation
             if ( chunk . size ( ) < CHUNK_SIZE )
-                chunk = StringRepeat ( '0', CHUNK_SIZE - chunk . size ( ) ) + chunk;
+                chunk = StringRepeat ( "0", CHUNK_SIZE - chunk . size ( ) ) + chunk;
             
             m_Chunks . push_back ( chunk );
             start = pos + 1;
@@ -76,9 +81,9 @@ int main ( void ) {
     uint16_t    pop;
     while ( std::cin >> std::ws >> subnet >> pop ) {
         Subnet a ( subnet );
-        std::cout << "Mask: " << a . m_Mask << std::endl;
-        for ( const auto & x : a . m_Chunks )
-          std::cout << x << std::endl;
+        //std::cout << "Mask: " << a . m_Mask << std::endl;
+        //for ( const auto & x : a . m_Chunks )
+        //  std::cout << x << std::endl;
     }
     return 0;
 }
