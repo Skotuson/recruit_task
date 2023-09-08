@@ -91,7 +91,8 @@ Data::Data ( void )
 
 bool Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
     std::shared_ptr<TrieNode> curr = m_TrieRoot;
-    return false;
+    
+    return true;
 }
 
 bool Data::Find ( const ECS & ecs, Result & r ) {
