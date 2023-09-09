@@ -100,6 +100,8 @@ bool Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
         chunk_idx++;
     }
 
+    //TODO: set PoP id
+
     return true;
 }
 
@@ -111,7 +113,10 @@ bool Data::Find ( const Subnet & subnet, Result & r ) {
         if ( ! curr -> m_Children . count ( subnet[chunk_idx] ) )
             return false;
         else curr = curr -> m_Children[subnet[chunk_idx]];
+        chunk_idx++;
     }
+
+    //TODO: return most specific subnet
 
     return true;
 }
