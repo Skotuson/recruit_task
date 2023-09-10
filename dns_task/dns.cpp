@@ -89,7 +89,9 @@ char Subnet::operator [] ( size_t idx ) const {
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 /**
- @brief
+ @brief Represents one node in a Trie.
+        m_Pop holds value if the node happens to be a "terminating" node of some word
+        m_Children holds pointers to node children
  */
 struct TrieNode {
     TrieNode ( void );
