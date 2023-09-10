@@ -116,7 +116,7 @@ struct Data {
     bool       Insert ( const Subnet & subnet, 
                         uint16_t       pop_id );
 
-    size_t                    m_Size;
+    size_t    m_Size;
     ATrieNode m_TrieRoot;
 };
 
@@ -150,6 +150,7 @@ bool Data::Find ( const Subnet & subnet, Result & r ) {
     nodeStack . push ( m_TrieRoot );
     size_t chunk_idx = 0;
 
+    //Try to traverse the trie and save all visited nodes onto a stack for future backtracking.
     while ( chunk_idx != subnet . m_Bits . size ( ) ) {
         auto f = nodeStack . top ( );
         auto node = f -> m_Children[subnet[chunk_idx]];
@@ -166,7 +167,7 @@ bool Data::Find ( const Subnet & subnet, Result & r ) {
         chunk_idx++;
     }
 
-    //Backtrack
+    //No suitable subnet was found on the first pass, backtrack in attempt to find one.
     while ( ! nodeStack . empty ( ) ) {
         auto f = nodeStack . top ( );
         auto pop = f -> m_PoP;
