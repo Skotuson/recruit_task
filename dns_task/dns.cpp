@@ -188,5 +188,12 @@ int main ( void ) {
     r = Route ( d, Subnet ( "2a01:4b40:6000:0001::/56" ) );
     assert ( r . first == 51 );
 
+    std::cout << "> ";
+    while ( std::cin >> std::ws >> subnet ) {
+        r = Route ( d, Subnet ( subnet ) );
+        std::cout << "> ";
+    }
+        
+
     return 0;
 }
