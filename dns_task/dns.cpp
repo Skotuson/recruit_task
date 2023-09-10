@@ -211,19 +211,26 @@ int main ( void ) {
     std::cout << "Data Parsed ( " << d . m_Size << " trie nodes )\n" << std::endl;
 
     r = Route ( d, Subnet ( "2001:49f0:d0b8:8a00::/56" ) );
-    assert ( r . first == 174 );
+    assert ( r . first == 174 && r . second == 48 );
 
     r = Route ( d, Subnet ( "2402:8100:257d:0321::/56" ) );
-    assert ( r . first == 215 );
+    assert ( r . first == 215 && r . second == 48 );
+
+    r = Route ( d, Subnet ( "2402:8100:2575::/50" ) );
+    assert ( r . first == 215 && r . second == 47 );
 
     r = Route ( d, Subnet ( "2a01:4b40:6000:0001::/56" ) );
-    assert ( r . first == 51 );
+    assert ( r . first == 51 && r . second == 37 );
 
     r = Route ( d, Subnet ( "2409:8915:2480:1000::/56" ) );
     assert ( r . first == 236 );
+
+    r = Route ( d, Subnet ( "2409:8915:2449:1000::/56" ) );
+    assert ( r . first == 236 && r . second == 45 );
     
-    r = Route ( d, Subnet ( "2409:8915:2480:1000::/50" ) );
-    assert ( r . first == 236 && r . second == 44 );
+    //Doesn't belong to any subnet
+    r = Route ( d, Subnet ( "2409:8915:2480:1000::/8" ) );
+    assert ( ! r . first && ! r . second );
 
     //Similiar addresses test
     r = Route ( d, Subnet ( "2a04:2e00:1234::/36" ) );
