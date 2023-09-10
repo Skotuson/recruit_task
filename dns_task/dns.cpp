@@ -7,6 +7,7 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <stack>
 #include <tuple>
 
 using Result = std::pair<uint16_t, int>;
@@ -100,6 +101,7 @@ TrieNode::TrieNode ( void )
 : m_Children ( std::vector<std::shared_ptr<TrieNode>> ( ARR_SIZE, nullptr ) )
 {}
 
+using ATrieNode = std::shared_ptr<TrieNode>;
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
@@ -115,7 +117,7 @@ struct Data {
                         uint16_t       pop_id );
 
     size_t                    m_Size;
-    std::shared_ptr<TrieNode> m_TrieRoot;
+    ATrieNode m_TrieRoot;
 };
 
 Data::Data ( void ) 
@@ -124,7 +126,7 @@ Data::Data ( void )
 {}
 
 bool Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
-    std::shared_ptr<TrieNode> curr = m_TrieRoot;
+    ATrieNode curr = m_TrieRoot;
     size_t chunk_idx = 0;
 
     while ( chunk_idx != subnet . m_Bits . size ( ) ) {
@@ -148,22 +150,36 @@ bool Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
 }
 
 bool Data::Find ( const Subnet & subnet, Result & r ) {
-    std::shared_ptr<TrieNode> curr = m_TrieRoot;
+    ATrieNode curr = m_TrieRoot;
+    std::stack<ATrieNode> nodeStack;
+    nodeStack . push ( m_TrieRoot );
     size_t chunk_idx = 0;
 
     while ( chunk_idx != subnet . m_Bits . size ( ) ) {
-        if ( ! curr -> m_Children [subnet[chunk_idx]] ) {
-            auto pop = curr -> m_PoP;
-            //Return PoP id for the most specific subnet
+        auto f = nodeStack . top ( );
+        auto node = f -> m_Children[subnet[chunk_idx]];
+        
+        if ( node ) nodeStack . push ( node );
+        else {
+            auto pop = f -> m_PoP;
             if ( pop ) {
-                r = *pop;
+                r = * pop;
                 return true;
             }
-            //No subnet matches
-            return false;
+            break;
         }
-        else curr = curr -> m_Children[subnet[chunk_idx]];
         chunk_idx++;
+    }
+
+    //Backtrack
+    while ( ! nodeStack . empty ( ) ) {
+        auto f = nodeStack . top ( );
+        auto pop = f -> m_PoP;
+        if ( pop ) {
+            r = * pop;
+            return true;
+        }
+        nodeStack . pop ( );
     }
 
     return true;
@@ -218,7 +234,10 @@ int main ( void ) {
 
     r = Route ( d, Subnet ( "2a04:2e01:0101::/36" ) );
     assert ( r . first == 79 && r . second == 29 );
-    
+
+    r = Route ( d, Subnet ( "2a04:2e06:0101::/36" ) );
+    assert ( r . first == 202 && r . second == 32 );
+
     //Little REPL for testing
     std::cout << "> ";
     while ( std::cin >> std::ws >> subnet ) {
