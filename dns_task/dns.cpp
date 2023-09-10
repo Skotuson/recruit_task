@@ -80,7 +80,6 @@ struct TrieNode {
     TrieNode ( void );
     std::optional<Result>                                      m_PoP;
     std::vector<std::shared_ptr<TrieNode>>                     m_Children;
-    //std::unordered_map<std::string, std::shared_ptr<TrieNode>> m_Children;
 };
 
 TrieNode::TrieNode ( void )
