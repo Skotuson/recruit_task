@@ -75,7 +75,7 @@ std::string Subnet::operator [] ( size_t idx ) const {
  */
 struct TrieNode {
      TrieNode ( void );
-    std::optional<uint16_t>                                    m_PoP;
+    std::optional<Result>                                      m_PoP;
     std::unordered_map<std::string, std::shared_ptr<TrieNode>> m_Children;
 };
 
@@ -116,7 +116,7 @@ bool Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
     }
 
     //Set PoP id
-    curr -> m_PoP = pop_id;
+    curr -> m_PoP = { pop_id, subnet . m_Mask };
 
     return true;
 }
@@ -130,7 +130,7 @@ bool Data::Find ( const Subnet & subnet, Result & r ) {
             auto pop = curr -> m_PoP;
             //Return PoP id for the most specific subnet
             if ( pop ) {
-                r = { *pop, 0 };
+                r = *pop;
                 return true;
             }
             //No subnet matches
@@ -147,20 +147,18 @@ bool Data::Find ( const Subnet & subnet, Result & r ) {
 Result Route ( Data & d, const Subnet & ecs ) {
     Result r = { 0, 0 };
     d . Find ( ecs, r );
-    std::cout << "PoP => " << r . first << std::endl;
+    std::cout << "PoP => " << r . first << ", Scope prefix-length => " << r . second << std::endl;
     return r;
 }
 
 int main ( void ) {
     Data d;
-    
-    //Subnet a ( "2001:49f0:d0b8::/48" );
-    //Subnet b ( "2409:8904:3490::/44" );
-    //Subnet c ( "2409:8915:2480::/44" );
-    //d . Insert ( a, 174 );
-    //d . Insert ( c, 0 );
-    //for ( const auto & x : a . m_Chunks )
-    //    std::cout << x << std::endl;
+    Result r;
+
+    Subnet a ( "2409:8915:2480::/44" );
+    d . Insert ( a, 236 );
+    r = Route ( d, Subnet ( "2409:8915:2480:1000::/56" ) );
+    assert ( r . first == 236 && r . second == 44 );
 
     //Parse all routing data
     std::ifstream ifs ( "routing-data.txt" );
@@ -177,8 +175,6 @@ int main ( void ) {
     ifs . close ( );
     std::cout << "Data Parsed\n" << std::endl;
 
-    Result r;
-
     r = Route ( d, Subnet ( "2001:49f0:d0b8:8a00::/56" ) );
     assert ( r . first == 174 );
 
@@ -188,6 +184,10 @@ int main ( void ) {
     r = Route ( d, Subnet ( "2a01:4b40:6000:0001::/56" ) );
     assert ( r . first == 51 );
 
+    r = Route ( d, Subnet ( "2409:8915:2480:1000::/56" ) );
+    assert ( r . first == 236 );
+
+    //Little REPL
     std::cout << "> ";
     while ( std::cin >> std::ws >> subnet ) {
         r = Route ( d, Subnet ( subnet ) );
