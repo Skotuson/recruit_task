@@ -28,6 +28,10 @@ std::string StringRepeat ( const std::string & str, size_t nrepeats ) {
         r += str;
     return r;
 }
+
+std::string HexToBin ( const std::string & hex ) {
+    
+}
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
@@ -37,7 +41,7 @@ std::string StringRepeat ( const std::string & str, size_t nrepeats ) {
 struct Subnet {
          Subnet      ( const  std::string & subnet );
     char operator [] ( size_t               idx ) const;
-    std::vector<char> m_Chunks;
+    std::vector<char> m_Bits;
     size_t            m_Mask;
 };
 
@@ -61,7 +65,7 @@ Subnet::Subnet ( const std::string & subnet ) {
             //Cut address if remaining mask length is shorter then one chunk
             chunk = chunk . substr ( 0, mask > CHUNK_SIZE ? CHUNK_SIZE : mask );
             for ( const auto & c : chunk )
-                m_Chunks . push_back ( c );
+                m_Bits . push_back ( c );
             start = pos + 1;
             mask -= chunk . size ( );
         }
@@ -69,7 +73,7 @@ Subnet::Subnet ( const std::string & subnet ) {
 }
 
 char Subnet::operator [] ( size_t idx ) const {
-    return m_Chunks[idx];
+    return m_Bits[idx];
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
@@ -114,7 +118,7 @@ bool Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
     std::shared_ptr<TrieNode> curr = m_TrieRoot;
     size_t chunk_idx = 0;
 
-    while ( chunk_idx != subnet . m_Chunks . size ( ) ) {
+    while ( chunk_idx != subnet . m_Bits . size ( ) ) {
         if ( ! curr -> m_Children [subnet[chunk_idx]] ) {
             m_Size++;
             curr = curr -> m_Children[subnet[chunk_idx]] = std::make_shared<TrieNode> ( );
@@ -138,7 +142,7 @@ bool Data::Find ( const Subnet & subnet, Result & r ) {
     std::shared_ptr<TrieNode> curr = m_TrieRoot;
     size_t chunk_idx = 0;
 
-    while ( chunk_idx != subnet . m_Chunks . size ( ) ) {
+    while ( chunk_idx != subnet . m_Bits . size ( ) ) {
         if ( ! curr -> m_Children [subnet[chunk_idx]] ) {
             auto pop = curr -> m_PoP;
             //Return PoP id for the most specific subnet
@@ -169,7 +173,7 @@ int main ( void ) {
     Result r;
 
     Subnet a ( "2a04:2e00::/29" );
-    for ( const auto & x : a . m_Chunks )
+    for ( const auto & x : a . m_Bits )
         std::cout << x << " " << std::endl;
 
     return 0;
