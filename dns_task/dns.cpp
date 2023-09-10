@@ -149,7 +149,9 @@ bool Data::Find ( const Subnet & subnet, Result & r ) {
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
 Result Route ( Data & d, const Subnet & ecs ) {
-    return { 0, 0 };
+    Result r = { 0, 0 };
+    d . Find ( ecs, r );
+    return r;
 }
 
 int main ( void ) {
