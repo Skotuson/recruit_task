@@ -74,8 +74,6 @@ std::string Subnet::operator [] ( size_t idx ) const {
  */
 struct TrieNode {
      TrieNode ( void );
-     //Overloaded ctor to store the pop value into optional
-     TrieNode ( uint16_t pop );
     std::optional<uint16_t>                                    m_PoP;
     std::unordered_map<std::string, std::shared_ptr<TrieNode>> m_Children;
 };
@@ -84,10 +82,6 @@ TrieNode::TrieNode ( void )
 {
 }
 
-TrieNode::TrieNode ( uint16_t pop )
-: m_PoP ( pop )
-{
-}
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
