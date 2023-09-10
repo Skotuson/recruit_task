@@ -229,6 +229,7 @@ int main ( void ) {
     r = Route ( d, Subnet ( "2409:8915:2480:1000::/50" ) );
     assert ( r . first == 236 && r . second == 44 );
 
+    //Similiar addresses test
     r = Route ( d, Subnet ( "2a04:2e00:1234::/36" ) );
     assert ( r . first == 79 && r . second == 32 );
 
