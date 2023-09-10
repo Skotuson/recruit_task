@@ -161,11 +161,6 @@ int main ( void ) {
     Data d;
     Result r;
 
-    //Subnet a ( "2409:8915:2480::/44" );
-    //d . Insert ( a, 236 );
-    //r = Route ( d, Subnet ( "2409:8915:2480:1000::/56" ) );
-    //assert ( r . first == 236 && r . second == 44 );
-
     //Parse all routing data
     std::ifstream ifs ( "routing-data.txt" );
     std::string subnet;
@@ -199,7 +194,7 @@ int main ( void ) {
     r = Route ( d, Subnet ( "2a04:2e00:1234::/36" ) );
     assert ( r . first == 79 && r . second == 29 );
 
-    //Little REPL
+    //Little REPL for testing
     std::cout << "> ";
     while ( std::cin >> std::ws >> subnet ) {
         r = Route ( d, Subnet ( subnet ) );
