@@ -78,8 +78,8 @@ char Subnet::operator [] ( size_t idx ) const {
  */
 struct TrieNode {
     TrieNode ( void );
-    std::optional<Result>                                      m_PoP;
-    std::vector<std::shared_ptr<TrieNode>>                     m_Children;
+    std::optional<Result>                  m_PoP;
+    std::vector<std::shared_ptr<TrieNode>> m_Children;
 };
 
 TrieNode::TrieNode ( void )
