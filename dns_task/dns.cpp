@@ -3,6 +3,7 @@
 #include <optional>
 #include <cstdint>
 #include <cassert>
+#include <fstream>
 #include <vector>
 #include <memory>
 #include <string>
@@ -162,15 +163,19 @@ int main ( void ) {
     //    std::cout << x << std::endl;
 
     //Parse all routing data
+    std::ifstream ifs ( "routing-data.txt" );
     std::string subnet;
     uint16_t    pop;
-    while ( std::cin >> std::ws >> subnet >> pop ) {
+    while ( ifs >> std::ws >> subnet >> pop ) {
         Subnet a ( subnet );
         d . Insert ( a, pop );
         //std::cout << "Mask: " << a . m_Mask << std::endl;
         //for ( const auto & x : a . m_Chunks )
         //  std::cout << x << std::endl;
     }
+
+    ifs . close ( );
+    std::cout << "Data Parsed\n" << std::endl;
 
     Result r;
 
@@ -179,6 +184,9 @@ int main ( void ) {
 
     r = Route ( d, Subnet ( "2402:8100:257d:0321::/56" ) );
     assert ( r . first == 215 );
+
+    r = Route ( d, Subnet ( "2a01:4b40:6000:0001::/56" ) );
+    assert ( r . first == 51 );
 
     return 0;
 }
