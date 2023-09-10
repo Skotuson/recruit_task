@@ -48,6 +48,7 @@ Subnet::Subnet ( const std::string & subnet ) {
     //Get mask from the string
     pos = subnet . find ( "/" );
     mask = m_Mask = std::stoi ( subnet . substr ( pos + 1, subnet . size ( ) - pos ) );
+    //TODO: fractional result
     mask /= BIT_COUNT;
 
     while ( pos != std::string::npos && mask ) {
@@ -120,6 +121,9 @@ bool Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
 
     //TODO: handle duplicit cases
     //e.g. 2a04:2e00::/29 79 and 2a04:2e00::/32 79
+    //Result pop = { pop_id, subnet . m_Mask };
+    //if ( ! curr -> m_PoP || curr -> m_PoP -> second > pop . second )
+    //    curr -> m_PoP = pop;
     //Set PoP id
     curr -> m_PoP = { pop_id, subnet . m_Mask };
 
@@ -160,6 +164,11 @@ int main ( void ) {
     Data d;
     Result r;
 
+    Subnet a ( "2a04:2e00::/29" );
+    for ( const auto & x : a . m_Chunks )
+        std::cout << x << " " << std::endl;
+
+    return 0;
     //Parse all routing data
     std::ifstream ifs ( "routing-data.txt" );
     std::string subnet;
