@@ -119,6 +119,8 @@ bool Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
         chunk_idx++;
     }
 
+    //TODO: handle duplicit cases
+    //e.g. 2a04:2e00::/29 79 and 2a04:2e00::/32 79
     //Set PoP id
     curr -> m_PoP = { pop_id, subnet . m_Mask };
 
@@ -159,10 +161,10 @@ int main ( void ) {
     Data d;
     Result r;
 
-    Subnet a ( "2409:8915:2480::/44" );
-    d . Insert ( a, 236 );
-    r = Route ( d, Subnet ( "2409:8915:2480:1000::/56" ) );
-    assert ( r . first == 236 && r . second == 44 );
+    //Subnet a ( "2409:8915:2480::/44" );
+    //d . Insert ( a, 236 );
+    //r = Route ( d, Subnet ( "2409:8915:2480:1000::/56" ) );
+    //assert ( r . first == 236 && r . second == 44 );
 
     //Parse all routing data
     std::ifstream ifs ( "routing-data.txt" );
@@ -190,6 +192,12 @@ int main ( void ) {
 
     r = Route ( d, Subnet ( "2409:8915:2480:1000::/56" ) );
     assert ( r . first == 236 );
+    
+    r = Route ( d, Subnet ( "2409:8915:2480:1000::/50" ) );
+    assert ( r . first == 236 && r . second == 44 );
+
+    r = Route ( d, Subnet ( "2a04:2e00:1234::/36" ) );
+    assert ( r . first == 79 && r . second == 29 );
 
     //Little REPL
     std::cout << "> ";
