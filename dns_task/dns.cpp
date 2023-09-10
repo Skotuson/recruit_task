@@ -121,7 +121,6 @@ bool Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
     }
 
     //Set PoP id
-    std::cout << "Setting " << subnet[chunk_idx - 1] << std::endl;
     curr -> m_PoP = pop_id;
 
     return true;
@@ -133,7 +132,6 @@ bool Data::Find ( const Subnet & subnet, Result & r ) {
 
     while ( chunk_idx != subnet . m_Chunks . size ( ) ) {
         if ( ! curr -> m_Children . count ( subnet[chunk_idx] ) ) {
-            std::cout << subnet[chunk_idx] << " not found" << std::endl;
             auto pop = curr -> m_PoP;
             //Return PoP id for the most specific subnet
             if ( pop ) {
@@ -143,10 +141,7 @@ bool Data::Find ( const Subnet & subnet, Result & r ) {
             //No subnet matches
             return false;
         }
-        else {
-           std::cout << subnet[chunk_idx] << " found" << std::endl; 
-            curr = curr -> m_Children[subnet[chunk_idx]];
-        } 
+        else curr = curr -> m_Children[subnet[chunk_idx]];
         chunk_idx++;
     }
 
@@ -157,38 +152,39 @@ bool Data::Find ( const Subnet & subnet, Result & r ) {
 Result Route ( Data & d, const Subnet & ecs ) {
     Result r = { 0, 0 };
     d . Find ( ecs, r );
+    std::cout << "PoP => " << r . first << std::endl;
     return r;
 }
 
 int main ( void ) {
     Data d;
     
-    Subnet a ( "2001:49f0:d0b8::/48" );
+    //Subnet a ( "2001:49f0:d0b8::/48" );
     //Subnet b ( "2409:8904:3490::/44" );
     //Subnet c ( "2409:8915:2480::/44" );
-    d . Insert ( a, 174 );
+    //d . Insert ( a, 174 );
     //d . Insert ( c, 0 );
     //for ( const auto & x : a . m_Chunks )
     //    std::cout << x << std::endl;
-    
-    Result r = { 0, 0 };
-    assert ( d . Find ( Subnet ( "2001:49f0:d0b8:8a00::/56" ), r ) );
-    std::cout << "PoP => " << r . first << std::endl;
 
-    return 0;
     //Parse all routing data
     std::string subnet;
     uint16_t    pop;
     while ( std::cin >> std::ws >> subnet >> pop ) {
         Subnet a ( subnet );
         d . Insert ( a, pop );
-        std::cout << "Mask: " << a . m_Mask << std::endl;
-        for ( const auto & x : a . m_Chunks )
-          std::cout << x << std::endl;
+        //std::cout << "Mask: " << a . m_Mask << std::endl;
+        //for ( const auto & x : a . m_Chunks )
+        //  std::cout << x << std::endl;
     }
 
-    //for ( const auto & el : d . m_TrieRoot -> m_Children )
-    //    std::cout << el . first << " -> " << el . second -> m_Children . size ( ) << std::endl;
+    Result r;
+
+    r = Route ( d, Subnet ( "2001:49f0:d0b8:8a00::/56" ) );
+    assert ( r . first == 174 );
+
+    r = Route ( d, Subnet ( "2402:8100:257d:0321::/56" ) );
+    assert ( r . first == 215 );
 
     return 0;
 }
