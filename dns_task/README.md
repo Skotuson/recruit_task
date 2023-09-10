@@ -6,6 +6,12 @@ Datová struktura serveru, která umožňuje najít odpovědi je ve formě `Trie
 Samotné řešení je rozdělené do několika částí:
 
 ### Pomocné funkce
+```cpp
+std::string StringRepeat ( const std::string & str, size_t nrepeats );
+```
+```cpp
+std::string HexToBin ( const std::string & hex );
+```
 ### Struktura Subnet
 ### Struktury TrieNode a Data
 ### Funkce Route
