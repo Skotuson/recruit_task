@@ -41,7 +41,10 @@ struct Subnet {
 Subnet::Subnet ( const std::string & subnet ) {
     size_t start = 0, 
            pos = 0; 
-    //TODO: take mask length into consideration before parsing
+    //Get mask from the string
+    pos = subnet . find ( "/" );
+    m_Mask = std::stoi ( subnet . substr ( pos + 1, subnet . size ( ) - pos ) );
+
     while ( pos != std::string::npos ) {
         pos = subnet . find ( ":", start );
         if ( pos != std::string::npos ) {
@@ -53,8 +56,6 @@ Subnet::Subnet ( const std::string & subnet ) {
             start = pos + 1;
         }
     }
-    //Get mask from the remaining string
-    m_Mask = std::stoi ( subnet . substr ( start + 1, subnet . size ( ) - start ) );
 }
 
 std::string Subnet::operator [] ( size_t idx ) const {
@@ -160,7 +161,7 @@ int main ( void ) {
     Subnet a ( "2001:49f0:d0b8::/48" );
     //Subnet b ( "2409:8904:3490::/44" );
     //Subnet c ( "2409:8915:2480::/44" );
-    d . Insert ( a, 174 );
+    //d . Insert ( a, 174 );
     //d . Insert ( c, 0 );
     //for ( const auto & x : a . m_Chunks )
     //    std::cout << x << std::endl;
@@ -169,18 +170,16 @@ int main ( void ) {
     std::string subnet;
     uint16_t    pop;
     while ( std::cin >> std::ws >> subnet >> pop ) {
-        break;
         Subnet a ( subnet );
         d . Insert ( a, pop );
-        //std::cout << "Mask: " << a . m_Mask << std::endl;
-        //for ( const auto & x : a . m_Chunks )
-        //  std::cout << x << std::endl;
+        std::cout << "Mask: " << a . m_Mask << std::endl;
+        for ( const auto & x : a . m_Chunks )
+          std::cout << x << std::endl;
     }
 
-    Result r = { 0, 0 };
-
-    assert ( d . Find ( Subnet ( "2001:49f0:d0b8:8a00::/56" ), r ) );
-    std::cout << "PoP => " << r . first << std::endl;
+    //Result r = { 0, 0 };
+    //assert ( d . Find ( Subnet ( "2001:49f0:d0b8:8a00::/56" ), r ) );
+    //std::cout << "PoP => " << r . first << std::endl;
 
     //for ( const auto & el : d . m_TrieRoot -> m_Children )
     //    std::cout << el . first << " -> " << el . second -> m_Children . size ( ) << std::endl;
