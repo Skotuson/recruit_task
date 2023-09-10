@@ -138,11 +138,6 @@ bool Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
         chunk_idx++;
     }
 
-    //TODO: handle duplicit cases
-    //e.g. 2a04:2e00::/29 79 and 2a04:2e00::/32 79
-    //Result pop = { pop_id, subnet . m_Mask };
-    //if ( ! curr -> m_PoP || curr -> m_PoP -> second > pop . second )
-    //    curr -> m_PoP = pop;
     //Set PoP id
     curr -> m_PoP = { pop_id, subnet . m_Mask };
 
