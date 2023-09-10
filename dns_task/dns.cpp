@@ -12,7 +12,7 @@
 using Result = std::pair<uint16_t, int>;
 
 const size_t CHUNK_SIZE = 4,
-             BIT_COUNT  = 4,
+             BIT_COUNT  = 16,
              ARR_SIZE   = 128;
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
@@ -29,8 +29,18 @@ std::string StringRepeat ( const std::string & str, size_t nrepeats ) {
     return r;
 }
 
+std::unordered_map<char, std::string> HEX_TO_BIN = {
+    {'0', "0000"}, {'1', "0001"}, {'2', "0010"}, {'3', "0011"},
+    {'4', "0100"}, {'5', "0101"}, {'6', "0110"}, {'7', "0111"},
+    {'8', "1000"}, {'9', "1001"}, {'a', "1010"}, {'b', "1011"}, 
+    {'c', "1100"}, {'d', "1101"}, {'e', "1110"}, {'f', "1111"}
+};
+
 std::string HexToBin ( const std::string & hex ) {
-    
+    std::string r;
+    for ( const auto & c : hex )
+        r += HEX_TO_BIN[c];
+    return r;
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
@@ -52,8 +62,6 @@ Subnet::Subnet ( const std::string & subnet ) {
     //Get mask from the string
     pos = subnet . find ( "/" );
     mask = m_Mask = std::stoi ( subnet . substr ( pos + 1, subnet . size ( ) - pos ) );
-    //TODO: fractional result
-    mask /= BIT_COUNT;
 
     while ( pos != std::string::npos && mask ) {
         pos = subnet . find ( ":", start );
@@ -62,8 +70,9 @@ Subnet::Subnet ( const std::string & subnet ) {
             //Add ommited zeroes for more unified representation
             if ( chunk . size ( ) < CHUNK_SIZE )
                 chunk = StringRepeat ( "0", CHUNK_SIZE - chunk . size ( ) ) + chunk;
+            chunk = HexToBin ( chunk );
             //Cut address if remaining mask length is shorter then one chunk
-            chunk = chunk . substr ( 0, mask > CHUNK_SIZE ? CHUNK_SIZE : mask );
+            chunk = chunk . substr ( 0, mask > BIT_COUNT ? BIT_COUNT : mask );
             for ( const auto & c : chunk )
                 m_Bits . push_back ( c );
             start = pos + 1;
@@ -173,10 +182,7 @@ int main ( void ) {
     Result r;
 
     Subnet a ( "2a04:2e00::/29" );
-    for ( const auto & x : a . m_Bits )
-        std::cout << x << " " << std::endl;
 
-    return 0;
     //Parse all routing data
     std::ifstream ifs ( "routing-data.txt" );
     std::string subnet;
@@ -210,6 +216,9 @@ int main ( void ) {
     r = Route ( d, Subnet ( "2a04:2e00:1234::/36" ) );
     assert ( r . first == 79 && r . second == 32 );
 
+    r = Route ( d, Subnet ( "2a04:2e01:0101::/36" ) );
+    assert ( r . first == 79 && r . second == 29 );
+    
     //Little REPL for testing
     std::cout << "> ";
     while ( std::cin >> std::ws >> subnet ) {
