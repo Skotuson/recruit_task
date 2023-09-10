@@ -10,7 +10,8 @@
 
 using Result = std::pair<uint16_t, int>;
 
-const size_t CHUNK_SIZE = 4;
+const size_t CHUNK_SIZE = 4,
+             BIT_COUNT  = 4;
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 //Helper functions
@@ -40,20 +41,24 @@ struct Subnet {
 
 Subnet::Subnet ( const std::string & subnet ) {
     size_t start = 0, 
-           pos = 0; 
+           pos   = 0,
+           mask  = 0;
     //Get mask from the string
     pos = subnet . find ( "/" );
-    m_Mask = std::stoi ( subnet . substr ( pos + 1, subnet . size ( ) - pos ) );
+    mask = m_Mask = std::stoi ( subnet . substr ( pos + 1, subnet . size ( ) - pos ) );
+    mask /= BIT_COUNT;
 
-    while ( pos != std::string::npos ) {
+    while ( pos != std::string::npos && mask ) {
         pos = subnet . find ( ":", start );
         if ( pos != std::string::npos ) {
             std::string chunk = subnet . substr ( start, pos - start );
             //Add ommited zeroes for more unified representation
             if ( chunk . size ( ) < CHUNK_SIZE )
                 chunk = StringRepeat ( "0", CHUNK_SIZE - chunk . size ( ) ) + chunk;
+            chunk = chunk . substr ( 0, mask > CHUNK_SIZE ? CHUNK_SIZE : mask );
             m_Chunks . push_back ( chunk );
             start = pos + 1;
+            mask -= chunk . size ( );
         }
     }
 }
@@ -161,11 +166,16 @@ int main ( void ) {
     Subnet a ( "2001:49f0:d0b8::/48" );
     //Subnet b ( "2409:8904:3490::/44" );
     //Subnet c ( "2409:8915:2480::/44" );
-    //d . Insert ( a, 174 );
+    d . Insert ( a, 174 );
     //d . Insert ( c, 0 );
     //for ( const auto & x : a . m_Chunks )
     //    std::cout << x << std::endl;
     
+    Result r = { 0, 0 };
+    assert ( d . Find ( Subnet ( "2001:49f0:d0b8:8a00::/56" ), r ) );
+    std::cout << "PoP => " << r . first << std::endl;
+
+    return 0;
     //Parse all routing data
     std::string subnet;
     uint16_t    pop;
@@ -176,10 +186,6 @@ int main ( void ) {
         for ( const auto & x : a . m_Chunks )
           std::cout << x << std::endl;
     }
-
-    //Result r = { 0, 0 };
-    //assert ( d . Find ( Subnet ( "2001:49f0:d0b8:8a00::/56" ), r ) );
-    //std::cout << "PoP => " << r . first << std::endl;
 
     //for ( const auto & el : d . m_TrieRoot -> m_Children )
     //    std::cout << el . first << " -> " << el . second -> m_Children . size ( ) << std::endl;
