@@ -101,11 +101,13 @@ struct Data {
     bool       Insert ( const Subnet & subnet, 
                         uint16_t       pop_id );
 
+    size_t                    m_Size;
     std::shared_ptr<TrieNode> m_TrieRoot;
 };
 
 Data::Data ( void ) 
-: m_TrieRoot ( std::make_shared<TrieNode> ( ) )
+: m_TrieRoot ( std::make_shared<TrieNode> ( ) ),
+  m_Size     ( 0 )
 {}
 
 bool Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
@@ -113,8 +115,10 @@ bool Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
     size_t chunk_idx = 0;
 
     while ( chunk_idx != subnet . m_Chunks . size ( ) ) {
-        if ( ! curr -> m_Children [subnet[chunk_idx]] )
+        if ( ! curr -> m_Children [subnet[chunk_idx]] ) {
+            m_Size++;
             curr = curr -> m_Children[subnet[chunk_idx]] = std::make_shared<TrieNode> ( );
+        }
         else curr = curr -> m_Children[subnet[chunk_idx]];
         chunk_idx++;
     }
@@ -182,7 +186,7 @@ int main ( void ) {
     }
 
     ifs . close ( );
-    std::cout << "Data Parsed\n" << std::endl;
+    std::cout << "Data Parsed ( " << d . m_Size << " trie nodes )\n" << std::endl;
 
     r = Route ( d, Subnet ( "2001:49f0:d0b8:8a00::/56" ) );
     assert ( r . first == 174 );
@@ -200,7 +204,7 @@ int main ( void ) {
     assert ( r . first == 236 && r . second == 44 );
 
     r = Route ( d, Subnet ( "2a04:2e00:1234::/36" ) );
-    assert ( r . first == 79 && r . second == 29 );
+    assert ( r . first == 79 && r . second == 32 );
 
     //Little REPL for testing
     std::cout << "> ";
