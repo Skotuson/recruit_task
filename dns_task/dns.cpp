@@ -12,7 +12,8 @@
 using Result = std::pair<uint16_t, int>;
 
 const size_t CHUNK_SIZE = 4,
-             BIT_COUNT  = 4;
+             BIT_COUNT  = 4,
+             ARR_SIZE   = 128;
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 //Helper functions
@@ -34,10 +35,10 @@ std::string StringRepeat ( const std::string & str, size_t nrepeats ) {
  @brief
  */
 struct Subnet {
-                Subnet      ( const  std::string & subnet );
-    std::string operator [] ( size_t idx ) const;
-    std::vector<std::string> m_Chunks;
-    size_t                   m_Mask;
+         Subnet      ( const  std::string & subnet );
+    char operator [] ( size_t               idx ) const;
+    std::vector<char> m_Chunks;
+    size_t            m_Mask;
 };
 
 Subnet::Subnet ( const std::string & subnet ) {
@@ -56,15 +57,17 @@ Subnet::Subnet ( const std::string & subnet ) {
             //Add ommited zeroes for more unified representation
             if ( chunk . size ( ) < CHUNK_SIZE )
                 chunk = StringRepeat ( "0", CHUNK_SIZE - chunk . size ( ) ) + chunk;
+            //Cut address if remaining mask length is shorter then one chunk
             chunk = chunk . substr ( 0, mask > CHUNK_SIZE ? CHUNK_SIZE : mask );
-            m_Chunks . push_back ( chunk );
+            for ( const auto & c : chunk )
+                m_Chunks . push_back ( c );
             start = pos + 1;
             mask -= chunk . size ( );
         }
     }
 }
 
-std::string Subnet::operator [] ( size_t idx ) const {
+char Subnet::operator [] ( size_t idx ) const {
     return m_Chunks[idx];
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
@@ -74,14 +77,15 @@ std::string Subnet::operator [] ( size_t idx ) const {
  @brief
  */
 struct TrieNode {
-     TrieNode ( void );
+    TrieNode ( void );
     std::optional<Result>                                      m_PoP;
-    std::unordered_map<std::string, std::shared_ptr<TrieNode>> m_Children;
+    std::vector<std::shared_ptr<TrieNode>>                     m_Children;
+    //std::unordered_map<std::string, std::shared_ptr<TrieNode>> m_Children;
 };
 
 TrieNode::TrieNode ( void )
-{
-}
+: m_Children ( std::vector<std::shared_ptr<TrieNode>> ( ARR_SIZE, nullptr ) )
+{}
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
@@ -109,7 +113,7 @@ bool Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
     size_t chunk_idx = 0;
 
     while ( chunk_idx != subnet . m_Chunks . size ( ) ) {
-        if ( ! curr -> m_Children . count ( subnet[chunk_idx] ) )
+        if ( ! curr -> m_Children [subnet[chunk_idx]] )
             curr = curr -> m_Children[subnet[chunk_idx]] = std::make_shared<TrieNode> ( );
         else curr = curr -> m_Children[subnet[chunk_idx]];
         chunk_idx++;
@@ -126,7 +130,7 @@ bool Data::Find ( const Subnet & subnet, Result & r ) {
     size_t chunk_idx = 0;
 
     while ( chunk_idx != subnet . m_Chunks . size ( ) ) {
-        if ( ! curr -> m_Children . count ( subnet[chunk_idx] ) ) {
+        if ( ! curr -> m_Children [subnet[chunk_idx]] ) {
             auto pop = curr -> m_PoP;
             //Return PoP id for the most specific subnet
             if ( pop ) {
