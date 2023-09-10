@@ -12,6 +12,8 @@ using Result = std::pair<uint16_t, int>;
 
 const size_t CHUNK_SIZE = 4;
 
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+//Helper functions
 /**
  @brief Returns repeated string
  @param str String to repeat
@@ -23,7 +25,12 @@ std::string StringRepeat ( const std::string & str, size_t nrepeats ) {
         r += str;
     return r;
 }
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+/**
+ @brief
+ */
 struct Subnet {
                 Subnet      ( const  std::string & subnet );
     std::string operator [] ( size_t idx ) const;
@@ -34,7 +41,7 @@ struct Subnet {
 Subnet::Subnet ( const std::string & subnet ) {
     size_t start = 0, 
            pos = 0; 
-    //TODO: take mask length into consideration before parsing.
+    //TODO: take mask length into consideration before parsing
     while ( pos != std::string::npos ) {
         pos = subnet . find ( ":", start );
         if ( pos != std::string::npos ) {
@@ -53,7 +60,12 @@ Subnet::Subnet ( const std::string & subnet ) {
 std::string Subnet::operator [] ( size_t idx ) const {
     return m_Chunks[idx];
 }
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+/**
+ @brief
+ */
 struct TrieNode {
      TrieNode ( void );
      //Overloaded ctor to store the pop value into optional
@@ -70,7 +82,12 @@ TrieNode::TrieNode ( uint16_t pop )
 : m_PoP ( pop )
 {
 }
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+/**
+ @brief
+ */
 struct Data {
      Data ( void );
     
@@ -129,6 +146,7 @@ bool Data::Find ( const Subnet & subnet, Result & r ) {
 
     return true;
 }
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
 Result Route ( Data & d, const Subnet & ecs ) {
     return { 0, 0 };
