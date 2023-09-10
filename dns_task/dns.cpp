@@ -34,6 +34,7 @@ struct Subnet {
 Subnet::Subnet ( const std::string & subnet ) {
     size_t start = 0, 
            pos = 0; 
+    //TODO: take mask length into consideration before parsing.
     while ( pos != std::string::npos ) {
         pos = subnet . find ( ":", start );
         if ( pos != std::string::npos ) {
@@ -52,10 +53,6 @@ Subnet::Subnet ( const std::string & subnet ) {
 std::string Subnet::operator [] ( size_t idx ) const {
     return m_Chunks[idx];
 }
-
-struct ECS {
-
-};
 
 struct TrieNode {
      TrieNode ( void );
@@ -100,7 +97,9 @@ bool Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
         chunk_idx++;
     }
 
-    //TODO: set PoP id
+    //Set PoP id
+    std::cout << "Setting " << subnet[chunk_idx - 1] << std::endl;
+    curr -> m_PoP = pop_id;
 
     return true;
 }
@@ -110,13 +109,23 @@ bool Data::Find ( const Subnet & subnet, Result & r ) {
     size_t chunk_idx = 0;
 
     while ( chunk_idx != subnet . m_Chunks . size ( ) ) {
-        if ( ! curr -> m_Children . count ( subnet[chunk_idx] ) )
+        if ( ! curr -> m_Children . count ( subnet[chunk_idx] ) ) {
+            std::cout << subnet[chunk_idx] << " not found" << std::endl;
+            auto pop = curr -> m_PoP;
+            //Return PoP id for the most specific subnet
+            if ( pop ) {
+                r = { *pop, 0 };
+                return true;
+            }
+            //No subnet matches
             return false;
-        else curr = curr -> m_Children[subnet[chunk_idx]];
+        }
+        else {
+           std::cout << subnet[chunk_idx] << " found" << std::endl; 
+            curr = curr -> m_Children[subnet[chunk_idx]];
+        } 
         chunk_idx++;
     }
-
-    //TODO: return most specific subnet
 
     return true;
 }
@@ -128,10 +137,10 @@ Result Route ( Data & d, const Subnet & ecs ) {
 int main ( void ) {
     Data d;
     
-    //Subnet a ( "2001:49f0:d0b8::/48" );
+    Subnet a ( "2001:49f0:d0b8::/48" );
     //Subnet b ( "2409:8904:3490::/44" );
     //Subnet c ( "2409:8915:2480::/44" );
-    //d . Insert ( b, 0 );
+    d . Insert ( a, 174 );
     //d . Insert ( c, 0 );
     //for ( const auto & x : a . m_Chunks )
     //    std::cout << x << std::endl;
@@ -140,6 +149,7 @@ int main ( void ) {
     std::string subnet;
     uint16_t    pop;
     while ( std::cin >> std::ws >> subnet >> pop ) {
+        break;
         Subnet a ( subnet );
         d . Insert ( a, pop );
         //std::cout << "Mask: " << a . m_Mask << std::endl;
@@ -147,8 +157,13 @@ int main ( void ) {
         //  std::cout << x << std::endl;
     }
 
-    for ( const auto & el : d . m_TrieRoot -> m_Children )
-        std::cout << el . first << " -> " << el . second -> m_Children . size ( ) << std::endl;
+    Result r = { 0, 0 };
+
+    assert ( d . Find ( Subnet ( "2001:49f0:d0b8:8a00::/56" ), r ) );
+    std::cout << "PoP => " << r . first << std::endl;
+
+    //for ( const auto & el : d . m_TrieRoot -> m_Children )
+    //    std::cout << el . first << " -> " << el . second -> m_Children . size ( ) << std::endl;
 
     return 0;
 }
