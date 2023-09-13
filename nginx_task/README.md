@@ -26,3 +26,4 @@ V paměti je uložen ve složce, která je specifikovaná direktivou `proxy_cach
 ### 2)
 
 ### 3)
+**NGINX** využívá hash tabulku uloženou ve struktuře `ngx_hash_wildcard_t`, která v sobě má samotnou hashovací tabulku (struktura `ngx_hash_t`) a další informace v proměnné `value`.
