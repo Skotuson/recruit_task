@@ -8,6 +8,6 @@ Datová struktura serveru, která umožňuje najít odpovědi je ve formě `Trie
 
 ---
 
-## Problémy
+## Postup řešení a problémy
 1) Maska
 2) No Backtrack
