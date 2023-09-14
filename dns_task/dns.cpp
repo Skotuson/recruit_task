@@ -14,7 +14,7 @@ using Result = std::pair<uint16_t, int>;
 
 const size_t CHUNK_SIZE = 4,
              BIT_COUNT  = 16,
-             ARR_SIZE   = 128;
+             ARR_SIZE   = 2;
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 //Helper functions
@@ -132,11 +132,12 @@ bool Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
     size_t chunk_idx = 0;
 
     while ( chunk_idx != subnet . m_Bits . size ( ) ) {
-        if ( ! curr -> m_Children [subnet[chunk_idx]] ) {
+        size_t idx = subnet[chunk_idx] - '0';
+        if ( ! curr -> m_Children [idx] ) {
             m_Size++;
-            curr = curr -> m_Children[subnet[chunk_idx]] = std::make_shared<TrieNode> ( );
+            curr = curr -> m_Children[idx] = std::make_shared<TrieNode> ( );
         }
-        else curr = curr -> m_Children[subnet[chunk_idx]];
+        else curr = curr -> m_Children[idx];
         chunk_idx++;
     }
 
@@ -155,7 +156,7 @@ bool Data::Find ( const Subnet & subnet, Result & r ) {
     //Try to traverse the trie and save all visited nodes onto a stack for future backtracking.
     while ( chunk_idx != subnet . m_Bits . size ( ) ) {
         auto f = nodeStack . top ( );
-        auto node = f -> m_Children[subnet[chunk_idx]];
+        auto node = f -> m_Children[subnet[chunk_idx] - '0'];
         
         if ( node ) nodeStack . push ( node );
         else {
@@ -225,7 +226,7 @@ int main ( void ) {
     assert ( r . first == 51 && r . second == 37 );
 
     r = Route ( d, Subnet ( "2409:8915:2480:1000::/56" ) );
-    assert ( r . first == 236 );
+    assert ( r . first == 236 && r . second == 44 );
 
     r = Route ( d, Subnet ( "2409:8915:2449:1000::/56" ) );
     assert ( r . first == 236 && r . second == 45 );
@@ -244,13 +245,12 @@ int main ( void ) {
     r = Route ( d, Subnet ( "2a04:2e06:0101::/36" ) );
     assert ( r . first == 202 && r . second == 32 );
 
-    //Little REPL for testing
-    std::cout << "> ";
-    while ( std::cin >> std::ws >> subnet ) {
-        r = Route ( d, Subnet ( subnet ) );
-        std::cout << "> ";
-    }
+    ////Little REPL for testing
+    //std::cout << "> ";
+    //while ( std::cin >> std::ws >> subnet ) {
+    //    r = Route ( d, Subnet ( subnet ) );
+    //    std::cout << "> ";
+    //}
         
-
     return 0;
 }
