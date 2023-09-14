@@ -37,6 +37,11 @@ std::unordered_map<char, std::string> HEX_TO_BIN = {
     {'c', "1100"}, {'d', "1101"}, {'e', "1110"}, {'f', "1111"}
 };
 
+/**
+ @brief Converts hexadecimal number in string form to binary string form
+ @param hex Hexadecimal number
+ @return String containing binary representation of input number
+ */
 std::string HexToBin ( const std::string & hex ) {
     std::string r;
     for ( const auto & c : hex )
@@ -47,10 +52,21 @@ std::string HexToBin ( const std::string & hex ) {
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 /**
- @brief
+ @brief Class encapsulating a subnet information.
+ Implementation holds bit representation of the address and the subnet mask value.
  */
 struct Subnet {
+        /**
+         @brief Constructor which parses the subnet string into bits and extracts the mask value.
+         @param subnet String representation of the subnet
+         */
          Subnet      ( const  std::string & subnet );
+
+         /**
+          @brief Returns value from the m_Bits attribute.
+          @param idx Index to return the value from
+          @return Character from the m_Bits vector
+         */
     char operator [] ( size_t               idx ) const;
     std::vector<char> m_Bits;
     size_t            m_Mask;
@@ -90,7 +106,7 @@ char Subnet::operator [] ( size_t idx ) const {
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 /**
  @brief Represents one node in a Trie.
-        m_Pop holds value if the node happens to be a "terminating" node of some word
+        m_PoP holds value if the node happens to be a "terminating" node of some word
         m_Children holds pointers to node children
  */
 struct TrieNode {
@@ -111,40 +127,63 @@ using ATrieNode = std::shared_ptr<TrieNode>;
  @brief
  */
 struct Data {
-     Data ( void );
-    
-    bool       Find   ( const Subnet & subnet, 
-                        Result       & r );
-    bool       Insert ( const Subnet & subnet, 
-                        uint16_t       pop_id );
+         
+         /**
+          @brief Parses routing data
+          @param filename File in which the routing data are stored
+          */
+         Data ( const std::string & filename );
+         /**
+          @brief Finds an element stored in a trie
+          @param subnet Subnet to find
+          @param r Output parameter which holds the value of PoP and Scope-prefix length
+          @return True if subnet was found, false otherwise
+          */
+    bool Find   ( const Subnet & subnet, 
+                  Result       & r );
+         /**
+          @brief Inserts an element into a trie
+          @param subnet Subnet to insert
+          @param pop_id Value to insert into the "terminating" node of the trie
+          */
+    void Insert ( const Subnet & subnet, 
+                  uint16_t       pop_id );
 
-    size_t    m_Size;
     ATrieNode m_TrieRoot;
+    size_t    m_Size;
 };
 
-Data::Data ( void ) 
+Data::Data ( const std::string & filename ) 
 : m_TrieRoot ( std::make_shared<TrieNode> ( ) ),
   m_Size     ( 0 )
-{}
+{
+    //Parse all routing data
+    std::ifstream ifs ( "routing-data.txt" );
+    std::string subnet;
+    uint16_t    pop;
+    while ( ifs >> std::ws >> subnet >> pop )
+        Insert ( Subnet ( subnet ), pop );
+    ifs . close ( );
+}
 
-bool Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
+void Data::Insert ( const Subnet & subnet, uint16_t pop_id ) {
     ATrieNode curr = m_TrieRoot;
     size_t chunk_idx = 0;
 
     while ( chunk_idx != subnet . m_Bits . size ( ) ) {
         size_t idx = subnet[chunk_idx] - '0';
+        //Non-existing node, create new
         if ( ! curr -> m_Children [idx] ) {
             m_Size++;
             curr = curr -> m_Children[idx] = std::make_shared<TrieNode> ( );
         }
+        //Node already exists, traverse it and continue with the insertion
         else curr = curr -> m_Children[idx];
         chunk_idx++;
     }
 
     //Set PoP id
     curr -> m_PoP = { pop_id, subnet . m_Mask };
-
-    return true;
 }
 
 bool Data::Find ( const Subnet & subnet, Result & r ) {
@@ -181,37 +220,33 @@ bool Data::Find ( const Subnet & subnet, Result & r ) {
         nodeStack . pop ( );
     }
 
-    return true;
+    //No suitable subnet was found (even after backtracking)
+    return false;
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+
+       /**
+        @brief Finds a PoP id of a subnet
+        @param d Data structure which holds stored routing data
+        @param ecs Subnet for which to find PoP id.
+        @return PoP id and Scope-prefix length for subnet in the param
+        */
 
 Result Route ( Data & d, const Subnet & ecs ) {
     Result r = { 0, 0 };
     d . Find ( ecs, r );
-    std::cout << "PoP => " << r . first << ", Scope prefix-length => " << r . second << std::endl;
+    //std::cout << "PoP => " << r . first << ", Scope prefix-length => " << r . second << std::endl;
     return r;
 }
 
 int main ( void ) {
-    Data d;
+
+    std::cout << "Parsing..." << std::endl;
+    Data d ( "routing-data.txt" );
+
+    std::cout << "Data Parsed ( " << d . m_Size << " trie nodes )" << std::endl;
+
     Result r;
-
-    Subnet a ( "2a04:2e00::/29" );
-
-    //Parse all routing data
-    std::ifstream ifs ( "routing-data.txt" );
-    std::string subnet;
-    uint16_t    pop;
-    while ( ifs >> std::ws >> subnet >> pop ) {
-        Subnet a ( subnet );
-        d . Insert ( a, pop );
-        //std::cout << "Mask: " << a . m_Mask << std::endl;
-        //for ( const auto & x : a . m_Chunks )
-        //  std::cout << x << std::endl;
-    }
-
-    ifs . close ( );
-    std::cout << "Data Parsed ( " << d . m_Size << " trie nodes )\n" << std::endl;
 
     r = Route ( d, Subnet ( "2001:49f0:d0b8:8a00::/56" ) );
     assert ( r . first == 174 && r . second == 48 );
@@ -245,12 +280,14 @@ int main ( void ) {
     r = Route ( d, Subnet ( "2a04:2e06:0101::/36" ) );
     assert ( r . first == 202 && r . second == 32 );
 
+    std::cout << "Assertions Passed" << std::endl;
+
     ////Little REPL for testing
     //std::cout << "> ";
     //while ( std::cin >> std::ws >> subnet ) {
     //    r = Route ( d, Subnet ( subnet ) );
     //    std::cout << "> ";
     //}
-        
+ 
     return 0;
 }
