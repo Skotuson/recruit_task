@@ -228,7 +228,7 @@ bool Data::Find ( const Subnet & subnet, Result & r ) {
        /**
         @brief Finds a PoP id of a subnet
         @param d Data structure which holds stored routing data
-        @param ecs Subnet for which to find PoP id.
+        @param ecs Subnet for which to find the PoP id and Scope-prefix length.
         @return PoP id and Scope-prefix length for subnet in the param
         */
 
